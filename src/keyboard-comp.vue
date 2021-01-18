@@ -15,7 +15,6 @@
         {{ item.value }}
       </div>
     </div>
-
     <div
       v-click-outside="clickOutsideHandle"
       v-show="show"
@@ -64,36 +63,6 @@
 </template>
 
 <script>
-const validate = function(binding) {
-  if (typeof binding.value !== 'function') {
-    console.warn('[Vue-click-outside:] provided expression', binding.expression, 'is not a function.');
-    return false;
-  }
-
-  return true;
-};
-const isPopup = function(popupItem, elements) {
-  if (!popupItem || !elements) return false;
-
-  for (var i = 0, len = elements.length; i < len; i++) {
-    try {
-      if (popupItem.contains(elements[i])) {
-        return true;
-      }
-      if (elements[i].contains(popupItem)) {
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
-  }
-
-  return false;
-};
-const isServer = function(vNode) {
-  return typeof vNode.componentInstance !== 'undefined' && vNode.componentInstance.$isServer;
-};
-
 export default {
   name: 'Keyboard',
   data() {
@@ -225,48 +194,31 @@ export default {
   },
   directives: {
     clickOutside: {
-      bind: function(el, binding, vNode) {
-        if (!validate(binding)) return;
-
-        // Define Handler and cache it on the element
-        function handler(e) {
-          if (!vNode.context) return;
-
-          // some components may have related popup item, on which we shall prevent the click outside event handler.
-          var elements = e.path || (e.composedPath && e.composedPath());
-          elements && elements.length > 0 && elements.unshift(e.target);
-
-          if (el.contains(e.target) || isPopup(vNode.context.popupItem, elements)) return;
-
-          el.__vueClickOutside__.callback(e);
-        }
-
-        // add Event Listeners
-        el.__vueClickOutside__ = {
-          handler: handler,
-          callback: binding.value
+      bind: function(el, binding, vnode) {
+        el.event = function(event) {
+          // 检查点击是否发生在节点之内（包括子节点）
+          if (!(el == event.target || el.contains(event.target))) {
+            // 如果没有，则触发调用
+            // 若绑定值为函数，则执行
+            // 这里我们可以通过钩子函数中的 vnode.context，来获取当前组件的作用域
+            if (typeof vnode.context[binding.expression] == 'function') {
+              vnode.context[binding.expression](event);
+            }
+          }
         };
-        const clickHandler = 'ontouchstart' in document.documentElement ? 'touchstart' : 'click';
-        !isServer(vNode) && document.addEventListener(clickHandler, handler);
+        // 绑定事件
+        // 设置为true，代表在DOM树中，注册了该listener的元素，会先于它下方的任何事件目标，接收到该事件。
+        document.body.addEventListener('click', el.event, true);
       },
-
-      update: function(el, binding) {
-        if (validate(binding)) el.__vueClickOutside__.callback = binding.value;
-      },
-
-      unbind: function(el, binding, vNode) {
-        // Remove Event Listeners
-        const clickHandler = 'ontouchstart' in document.documentElement ? 'touchstart' : 'click';
-        !isServer(vNode) &&
-          el.__vueClickOutside__ &&
-          document.removeEventListener(clickHandler, el.__vueClickOutside__.handler);
-        delete el.__vueClickOutside__;
+      unbind: function(el) {
+        // 解绑事件
+        document.body.removeEventListener('click', el.event, true);
       }
     }
   },
   methods: {
     clickOutsideHandle(e) {
-      e.stopPropagation();
+      e.preventDefault();
       if (e.target.className.indexOf('result-list') >= 0) {
         return;
       } else {
