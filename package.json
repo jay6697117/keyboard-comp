@@ -1,6 +1,6 @@
 {
   "name": "keyboard-comp-zjh",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "dist/keyboard-comp.ssr.js",
   "browser": "dist/keyboard-comp.esm.js",
@@ -23,7 +23,6 @@
     "@babel/preset-env": "^7.9.5",
     "@rollup/plugin-alias": "^2.2.0",
     "@rollup/plugin-commonjs": "^11.1.0",
-    "@rollup/plugin-image": "^2.0.6",
     "@rollup/plugin-replace": "^2.3.2",
     "@vue/cli-plugin-babel": "^4.3.1",
     "@vue/cli-service": "^4.3.1",
