@@ -265,8 +265,8 @@ export default {
     }
   },
   methods: {
-    clickOutsideHandle(evt) {
-      evt.stopPropagation();
+    clickOutsideHandle(e) {
+      e.stopPropagation();
       if (e.target.className.indexOf('result-list') >= 0) {
         return;
       } else {
