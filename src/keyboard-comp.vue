@@ -15,6 +15,7 @@
         {{ item.value }}
       </div>
     </div>
+
     <div
       v-click-outside="clickOutsideHandle"
       v-show="show"
@@ -63,6 +64,36 @@
 </template>
 
 <script>
+const validate = function(binding) {
+  if (typeof binding.value !== 'function') {
+    console.warn('[Vue-click-outside:] provided expression', binding.expression, 'is not a function.');
+    return false;
+  }
+
+  return true;
+};
+const isPopup = function(popupItem, elements) {
+  if (!popupItem || !elements) return false;
+
+  for (var i = 0, len = elements.length; i < len; i++) {
+    try {
+      if (popupItem.contains(elements[i])) {
+        return true;
+      }
+      if (elements[i].contains(popupItem)) {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+
+  return false;
+};
+const isServer = function(vNode) {
+  return typeof vNode.componentInstance !== 'undefined' && vNode.componentInstance.$isServer;
+};
+
 export default {
   name: 'Keyboard',
   data() {
@@ -194,29 +225,48 @@ export default {
   },
   directives: {
     clickOutside: {
-      bind(el, binding, vnode) {
-        function documentHandler(e) {
-          if (el.contains(e.target)) {
-            return false;
-          }
-          if (binding.expression) {
-            binding.value(e);
-          }
+      bind: function(el, binding, vNode) {
+        if (!validate(binding)) return;
+
+        // Define Handler and cache it on the element
+        function handler(e) {
+          if (!vNode.context) return;
+
+          // some components may have related popup item, on which we shall prevent the click outside event handler.
+          var elements = e.path || (e.composedPath && e.composedPath());
+          elements && elements.length > 0 && elements.unshift(e.target);
+
+          if (el.contains(e.target) || isPopup(vNode.context.popupItem, elements)) return;
+
+          el.__vueClickOutside__.callback(e);
         }
-        el.__vueClickOutside__ = documentHandler;
-        document.addEventListener('click', documentHandler);
+
+        // add Event Listeners
+        el.__vueClickOutside__ = {
+          handler: handler,
+          callback: binding.value
+        };
+        const clickHandler = 'ontouchstart' in document.documentElement ? 'touchstart' : 'click';
+        !isServer(vNode) && document.addEventListener(clickHandler, handler);
       },
-      update() {},
-      unbind(el, binding) {
-        document.removeEventListener('click', el.__vueClickOutside__);
+
+      update: function(el, binding) {
+        if (validate(binding)) el.__vueClickOutside__.callback = binding.value;
+      },
+
+      unbind: function(el, binding, vNode) {
+        // Remove Event Listeners
+        const clickHandler = 'ontouchstart' in document.documentElement ? 'touchstart' : 'click';
+        !isServer(vNode) &&
+          el.__vueClickOutside__ &&
+          document.removeEventListener(clickHandler, el.__vueClickOutside__.handler);
         delete el.__vueClickOutside__;
       }
     }
   },
   methods: {
-    clickOutsideHandle(e) {
-      console.log('clickOutsideHandle');
-      e.preventDefault();
+    clickOutsideHandle(evt) {
+      evt.stopPropagation();
       if (e.target.className.indexOf('result-list') >= 0) {
         return;
       } else {
@@ -311,7 +361,7 @@ export default {
     }
   },
   mounted() {
-    console.log('this :>> ', this);
+    // console.log('this :>> ', this);
   }
 };
 </script>
