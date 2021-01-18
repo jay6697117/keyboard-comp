@@ -1,6 +1,6 @@
 {
   "name": "keyboard-comp-zjh",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "main": "dist/keyboard-comp.ssr.js",
   "browser": "dist/keyboard-comp.esm.js",
