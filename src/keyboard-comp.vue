@@ -378,6 +378,8 @@ export default {
     bottom: 5px;
     min-width: calc(22% - 6px);
     width: calc(22% - 6px);
+    box-sizing: border-box;
+    height: 46px;
     padding: 12px 0px;
     background: #c8ceda;
     box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.35);
@@ -431,6 +433,8 @@ export default {
       float: left;
       min-width: calc((1 / 3) * 100% - 4px);
       width: calc((1 / 3) * 100% - 4px);
+      box-sizing: border-box;
+      height: 46px;
     }
 
     .keyboard-text.num:nth-child(4) {
@@ -450,6 +454,8 @@ export default {
       float: left;
       min-width: calc((1 / 7) * 100% - 4px);
       width: calc((1 / 7) * 100% - 4px);
+      box-sizing: border-box;
+      height: 46px;
     }
 
     .keyboard-text.num:nth-child(4) {
