@@ -2,6 +2,12 @@
   "name": "keyboard-comp-zjh",
   "version": "1.0.5",
   "description": "",
+  "license": "MIT",
+  "homepage": "http://8.136.5.54:90/#/keyboard",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jay6697117"
+  },
   "main": "dist/keyboard-comp.ssr.js",
   "browser": "dist/keyboard-comp.esm.js",
   "module": "dist/keyboard-comp.esm.js",
